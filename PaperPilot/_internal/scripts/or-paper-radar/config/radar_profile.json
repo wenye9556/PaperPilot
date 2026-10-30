@@ -1,0 +1,187 @@
+{
+  "configured": false,
+  "comment": "or-paper-radar 检索画像：关键词与期刊均可自由增删；configured=false 时 collect 拒绝运行",
+  "window_days": 365,
+  "min_score": 70,
+  "max_push": 10,
+  "review_queue_limit": 200,
+  "search_queries": [],
+  "journals": [
+    {
+      "name": "EJOR",
+      "issn": "0377-2217"
+    },
+    {
+      "name": "COR",
+      "issn": "0305-0548"
+    },
+    {
+      "name": "Transportation Science",
+      "issn": "0041-1655"
+    },
+    {
+      "name": "OMEGA",
+      "issn": "0305-0483"
+    },
+    {
+      "name": "TR Part A",
+      "issn": "0965-8564"
+    },
+    {
+      "name": "TR Part B",
+      "issn": "0191-2615"
+    },
+    {
+      "name": "TR Part C",
+      "issn": "0968-090X"
+    },
+    {
+      "name": "TR Part D",
+      "issn": "1361-9209"
+    },
+    {
+      "name": "TR Part E",
+      "issn": "1366-5545"
+    },
+    {
+      "name": "Networks",
+      "issn": "0028-3045"
+    },
+    {
+      "name": "Mathematics of OR",
+      "issn": "0364-765X"
+    },
+    {
+      "name": "Operations Research",
+      "issn": "0030-364X"
+    },
+    {
+      "name": "Management Science",
+      "issn": "0025-1909"
+    },
+    {
+      "name": "M&SOM",
+      "issn": "1523-4614"
+    },
+    {
+      "name": "POM",
+      "issn": "1059-1478"
+    },
+    {
+      "name": "IJOC",
+      "issn": "0899-1499"
+    },
+    {
+      "name": "IEEE TITS",
+      "issn": "1524-9050"
+    },
+    {
+      "name": "IEEE TEVC",
+      "issn": "1089-778X"
+    },
+    {
+      "name": "IEEE TASE",
+      "issn": "1545-5955"
+    },
+    {
+      "name": "IEEE TCYB",
+      "issn": "2168-2267"
+    },
+    {
+      "name": "IEEE IoT-J",
+      "issn": "2327-4662"
+    },
+    {
+      "name": "IEEE TII",
+      "issn": "1551-3203"
+    }
+  ],
+  "journal_pool_note": "ISSN 均为 OpenAlex issn_l 形态（2026-10-22 逐一经 api.openalex.org/sources/issn: 校验）。Transportation Science 原配置 1526-5447 与 issn_l 0041-1655 失配已修正；IJOC 同理改 0899-1499。",
+  "exclude_types": [
+    "editorial",
+    "book-chapter",
+    "book",
+    "paratext",
+    "erratum"
+  ],
+  "vault": null,
+  "ebsco_channel": {
+    "opid": "",
+    "databases": [
+      "a9h",
+      "bth",
+      "puh",
+      "eric",
+      "cmedm",
+      "nfh",
+      "bwh",
+      "lxh",
+      "8gh",
+      "trh",
+      "hev",
+      "nlebk",
+      "e63sww"
+    ],
+    "title_match_threshold": 0.55,
+    "min_pdf_bytes": 50000,
+    "utd_issn_whitelist": [
+      {
+        "name": "Operations Research",
+        "issn": "0030-364X"
+      },
+      {
+        "name": "Management Science",
+        "issn": "0025-1909"
+      },
+      {
+        "name": "Manufacturing & Service Operations Management",
+        "issn": "1523-4614"
+      },
+      {
+        "name": "Production and Operations Management",
+        "issn": "1059-1478"
+      },
+      {
+        "name": "INFORMS Journal on Computing",
+        "issn": "0899-1499"
+      },
+      {
+        "name": "INFORMS Journal on Computing (alt ISSN)",
+        "issn": "1091-9856"
+      },
+      {
+        "name": "Transportation Science",
+        "issn": "0041-1655"
+      },
+      {
+        "name": "Transportation Science (alt ISSN)",
+        "issn": "1526-5447"
+      },
+      {
+        "name": "Mathematics of Operations Research",
+        "issn": "0364-765X"
+      },
+      {
+        "name": "TR Part A",
+        "issn": "0965-8564"
+      },
+      {
+        "name": "TR Part B",
+        "issn": "0191-2615"
+      },
+      {
+        "name": "TR Part C",
+        "issn": "0968-090X"
+      },
+      {
+        "name": "TR Part D",
+        "issn": "1361-9209"
+      },
+      {
+        "name": "TR Part E",
+        "issn": "1366-5545"
+      }
+    ],
+    "whitelist_note": "INFORMS/UTD 系 + TR 系列。TS/IJOC 各留两个 ISSN 形态（OpenAlex 给 issn_l，EBSCO 元数据可能是另一形态）。IEEE 不进 EBSCO（学术库通常无 IEEE 汇刊全文），IEEE 论文走 OA 直下→Edge 借道→ScienceDirect 通道。"
+  }
+}

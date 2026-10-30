@@ -1,0 +1,26 @@
+{
+  "vault": "",
+  "pdf_root": "",
+  "topics_file": "_研究主题.md",
+  "profile_file": "_我的课题.md",
+  "llm": {
+    "base_url": "",
+    "model": "",
+    "api_key": "",
+    "temperature": 0.3,
+    "max_tokens": 12000,
+    "timeout": 600
+  },
+  "push": {
+    "serverchan_key": "",
+    "wecom_webhook": "",
+    "email": {
+      "host": "smtp.qq.com",
+      "port": 465,
+      "user": "",
+      "password": "",
+      "from": "",
+      "to": ""
+    }
+  }
+}

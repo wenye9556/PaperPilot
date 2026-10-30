@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PaperPilot 论文领航台</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --surface:#ffffff; --border:#e3e1da; --border-strong:#c9c6bc;
+    --text:#262624; --muted:#6f6d66; --faint:#9c9a92;
+    --accent:#0F6E56; --accent-soft:#E1F5EE; --warn:#854F0B; --warn-soft:#FAEEDA;
+    --blue:#185FA5; --blue-soft:#E6F1FB;
+  }
+  [data-theme="dark"]{
+    --bg:#161615; --surface:#1f1f1e; --border:#33332f; --border-strong:#4b4b45;
+    --text:#e8e8e4; --muted:#a5a39b; --faint:#76746d;
+    --accent:#4FD0A0; --accent-soft:#123f33; --warn:#E8A75C; --warn-soft:#3a2b12;
+    --blue:#6FB3F0; --blue-soft:#15283c;
+  }
+  [data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:#232322;color:var(--text)}
+  [data-theme="dark"] button.ghost{background:#262625;color:var(--accent)}
+  [data-theme="dark"] tr:hover td{background:#262624}
+  [data-theme="dark"] .mask{background:rgba(0,0,0,.55)}
+  [data-theme="dark"] .stat{background:var(--surface)}
+  [data-theme="dark"] textarea{background:#232322;color:var(--text)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:14px/1.6 "Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+  header{padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border);
+    display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+  h1{font-size:16px;font-weight:600;margin:0}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+  .stat{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 10px}
+  .stat b{color:var(--text);font-weight:600}
+  main{padding:20px 24px;max-width:1180px;margin:0 auto}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px}
+  .tab{padding:8px 16px;cursor:pointer;border:none;background:none;font-size:14px;color:var(--muted);
+    border-bottom:2px solid transparent;font-family:inherit}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  .panel{display:none}.panel.active{display:block}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  input,select{padding:8px 10px;border:1px solid var(--border-strong);border-radius:6px;
+    font:14px inherit;background:#fff;color:var(--text)}
+  input:focus,select:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+  .grow{flex:1;min-width:240px}
+  button{padding:8px 16px;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    border-radius:6px;cursor:pointer;font:14px inherit}
+  button:hover{filter:brightness(1.08)}
+  button.ghost{background:#fff;color:var(--accent)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .hint{font-size:12px;color:var(--faint);margin-top:8px}
+  .msg{padding:10px 12px;border-radius:8px;font-size:13px;margin:10px 0;display:none}
+  .msg.show{display:block}
+  .msg.err{background:var(--warn-soft);color:var(--warn);border:1px solid #EF9F27}
+  .msg.ok{background:var(--accent-soft);color:var(--accent);border:1px solid #5DCAA5}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);
+    border-bottom:1px solid var(--border-strong);padding:8px 6px;white-space:nowrap}
+  td{padding:8px 6px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:hover td{background:#fbfbf9}
+  .st{font-family:Consolas,monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);
+    border-radius:4px;padding:1px 6px;white-space:nowrap}
+  .st.g{background:var(--accent-soft);color:var(--accent);border-color:#5DCAA5}
+  .st.y{background:var(--warn-soft);color:var(--warn);border-color:#EF9F27}
+  .st.b{background:var(--blue-soft);color:var(--blue);border-color:#85B7EB}
+  .t{color:var(--text)}
+  .s{color:var(--muted);font-size:12px}
+  a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+  .empty{padding:32px;text-align:center;color:var(--faint);font-size:13px}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--border-strong);
+    border-top-color:var(--accent);border-radius:50%;animation:r .7s linear infinite;vertical-align:-2px}
+  @keyframes r{to{transform:rotate(360deg)}}
+  .plan{font-size:13px;color:var(--muted)}
+  .plan li{margin:6px 0}
+  .badge{font-size:11px;padding:1px 8px;border-radius:10px;border:1px solid var(--border-strong);color:var(--muted)}
+  header .spacer{flex:1}
+  .warnchip{font-size:12px;padding:3px 10px;border-radius:12px;background:var(--warn-soft);
+    color:var(--warn);border:1px solid #EF9F27;cursor:pointer}
+  .mask{position:fixed;inset:0;background:rgba(38,38,36,.35);display:none;align-items:center;
+    justify-content:center;z-index:50}
+  .mask.show{display:flex}
+  .dlg{background:var(--surface);border-radius:12px;border:1px solid var(--border);
+    width:560px;max-width:92vw;max-height:88vh;overflow:auto;padding:20px}
+  .dlg h2{font-size:15px;margin:0 0 4px}
+  .dlg .sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+  .field{margin-bottom:14px}
+  .field input{width:100%}
+  .field .tip{font-size:12px;color:var(--faint);margin-top:4px}
+  .dlg .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+  @media (max-width:760px){
+    header{padding:12px 14px;gap:8px}
+    h1{font-size:15px}
+    main{padding:12px 14px}
+    .row{flex-direction:column;align-items:stretch!important}
+    .row>*{width:100%!important;min-width:0!important;margin-bottom:6px}
+    .grow{min-width:0}
+    .field{width:100%!important}
+    .stats .stat:nth-child(4){display:none}
+    .card{padding:12px}
+    .card table{display:block;overflow-x:auto}
+    .dlg{width:100%;max-width:94vw;max-height:92vh;padding:14px}
+    .tabs{overflow-x:auto}
+    .tab{white-space:nowrap}
+    #jlog{max-height:200px}
+    .warnchip{font-size:11px;padding:2px 8px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>PaperPilot 文献工作台 <span id="ver" style="font-size:11px;color:var(--muted);font-weight:400"></span></h1>
+  <div class="stats" id="stats"><span class="stat">读取库状态…</span></div>
+  <div class="spacer"></div>
+  <span id="keywarn" class="warnchip" style="display:none">未配置 API Key，打分与精读不可用 — 点此设置</span>
+  <button id="btheme" class="ghost" title="切换深色 / 浅色" style="padding:4px 10px">🌙</button>
+  <button id="blog" class="ghost">日志</button>
+  <button id="babout" class="ghost">关于</button>
+  <button id="bset" class="ghost">设置</button>
+</header>
+
+<div class="mask" id="setmask">
+  <!-- 共享模型下拉候选：向导(w_model)和设置(s_model)的 list 都指向这里，🔄 按钮填充 -->
+  <datalist id="dl_models"></datalist>
+  <div class="dlg">
+    <h2>设置</h2>
+    <div class="sub">改动即时生效，保存在 exe 同目录的 settings.json 里，不进安装包。</div>
+
+    <div class="field">
+      <label>API Key（OpenAI 兼容接口）</label>
+      <div class="row" style="gap:8px">
+        <input id="s_key" type="password" placeholder="sk-..." class="grow">
+        <button id="st_llm" class="ghost" style="white-space:nowrap">测试连接</button>
+      </div>
+      <div class="tip" id="s_keytip">留空则沿用当前已配置的 key。</div>
+    </div>
+    <div class="row">
+      <div class="field grow"><label>Base URL</label><input id="s_url"></div>
+      <div class="field" style="width:280px"><label>模型 <span class="s" style="opacity:.7">（点🔄拉取可选列表）</span></label>
+        <div class="row" style="gap:6px">
+          <input id="s_model" list="dl_models" class="grow">
+          <button id="s_models" class="ghost" style="white-space:nowrap" title="用已填的 Base URL 和 API Key 拉取这家中转站可用的模型列表">🔄</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>OpenAlex API Key（可选，解锁独立额度）</label>
+      <div class="row" style="gap:8px">
+        <input id="s_oa" type="password" placeholder="留空则用共享额度" class="grow">
+        <button id="st_oa" class="ghost" style="white-space:nowrap">测试连接</button>
+      </div>
+      <div class="tip" id="s_oatip">不填也能用，但所有人共享同一 IP 的每日 $0.1 额度，容易被限流。
+        免费申请后每天 $1 独立额度：<code>POST https://api.openalex.org/api-keys {"email":"你的邮箱"}</code>，
+        再点邮件里的激活链接。</div>
+    </div>
+
+    <div class="field">
+      <label>礼貌池邮箱（发给 OpenAlex 的 UA，可选）</label>
+      <input id="s_oamail" placeholder="留空则不发邮箱" style="width:230px">
+      <div class="tip">OpenAlex 靠 UA 里的邮箱识别「礼貌池」，拿到更稳的速率。
+        另外它也是 <b>Unpaywall 的必要参数</b>：留空时「三级 OA 全文来源」里的 Unpaywall
+        那一级<strong>不会参与</strong>（实测空邮箱它直接返回 422），于是「找不到免费直链」
+        的概率会变高。填你自己的邮箱即可，一行字换回一路来源。</div>
+    </div>
+
+    <div class="field">
+      <label>文献库位置（下载的 PDF 与笔记都放这里）</label>
+      <div class="row" style="gap:6px">
+        <input id="s_lib" placeholder="留空 = 默认位置（文档\PaperPilotLibrary）">
+        <button id="b_libpick" class="ghost" style="white-space:nowrap" title="弹出系统对话框选择文件夹">📁 选择…</button>
+        <button id="b_libopen" class="ghost" style="white-space:nowrap" title="在资源管理器里打开当前 PDF 目录">打开</button>
+        <button id="b_libreset" class="ghost" style="white-space:nowrap" title="恢复为默认位置">默认</button>
+      </div>
+      <div class="tip">默认 <code id="s_deflib">文档\PaperPilotLibrary</code>。会在此目录下建
+        <code>literature\</code>（PDF）与 <code>vault\</code>（Obsidian 笔记库）；不存在会自动创建。
+        <b>点「📁 选择…」直接选文件夹，不用手打路径</b>；保存后立即生效，已有的 PDF 不会自动搬过去。</div>
+      <div class="tip" id="s_libnow" style="margin-top:4px"></div>
+    </div>
+
+    <div class="field">
+      <label>机构全文访问（任何有校园网的学校通用）</label>
+      <div class="row" style="gap:8px">
+        <button id="b_inst" class="ghost" style="white-space:nowrap">🎓 打开机构登录窗口</button>
+        <select id="s_brmode" class="grow" style="width:auto">
+          <option value="isolated">用 PaperPilot 专用浏览器（推荐）</option>
+          <option value="real">借用我日常浏览器的登录态</option>
+        </select>
+      </div>
+      <label style="margin-top:8px">学校图书馆门户地址（可选）</label>
+      <input id="s_brportal" placeholder="留空则打开 EBSCO；建议填你学校的图书馆登录页">
+      <div class="tip" id="s_insttip">
+        <b>专用浏览器</b>（默认）：在你学校门户里登录一次，登录态长期留在 PaperPilot 自己的
+        目录里 —— 之后跑下载<strong>不用关掉你日常用的浏览器</strong>，也不限哪所学校。<br>
+        <b>借用日常浏览器</b>：直接用你浏览器里已有的校园网 / 机构 cookie，但跑下载时
+        必须把 Edge / Chrome 完全关闭（含后台进程），否则调试端口起不来。<br>
+        校园网内两种模式通常都按学校 IP 自动放行；在校外时点上面按钮登一次。
+        填了学校门户地址，那个按钮就会打开<strong>你学校的统一身份认证页</strong>，
+        而不只是 EBSCO。
+      </div>
+    </div>
+
+    <div class="field">
+      <label>机构门户 opid（EBSCO，可选）</label>
+      <input id="s_ebsco" placeholder="例如 abcd12 —— 你自己学校的门户 id">
+      <div class="tip">机构全文通道用它打开你学校的 EBSCO 门户。校园网内通常按 IP 自动生效；
+        要手动登录时先点上面「打开 EBSCO 一次性登录」，登录后浏览器地址栏里 <code>/c/</code>
+        后面那串就是 opid。留空则用安装包自带的值（朋友版默认为空，填了才启用机构通道）。</div>
+    </div>
+
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="s_shen" style="width:auto">
+        <span>启用 Sci-Hub 兜底通道（默认关闭）</span>
+      </label>
+      <div class="tip">该通道是否符合你所在机构的订阅条款与当地法规，由你自行判断并承担后果；
+        本项目默认关闭。关闭时下载链会跳过这一环，只用开放获取 / 机构通道 / 出版商直链。</div>
+    </div>
+
+    <div class="field">
+      <label>Sci-Hub 镜像（逗号或换行分隔，留空=默认四个）</label>
+      <textarea id="s_shmir" rows="2" placeholder="sci-hub.ru, sci-hub.ee, sci-hub.se, sci-hub.st"
+        style="width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:6px;font-family:inherit;font-size:13px;resize:vertical"></textarea>
+      <div class="tip">镜像域名常换，遇到新域名（如 mksa.top）自己加一行就行，不用等新版。
+        填了这里就只用你填的；留空恢复默认 <code id="s_shmirdef">sci-hub.ru, sci-hub.ee, sci-hub.se, sci-hub.st</code>。
+        探测失败的镜像只降权/熔断 10 分钟、不会删除，域名恢复后自动重新启用。</div>
+    </div>
+
+    <div class="field">
+      <label>Sci-Hub 视觉模型（可选，留空=跟随上面的主模型）</label>
+      <input id="s_shmodel" placeholder="留空则用主模型">
+      <div class="tip">部分页面需要看图定位下载入口，靠多模态模型完成。主模型若不支持读图，
+        这里单独指定一个视觉模型即可，不用改代码。</div>
+    </div>
+
+    <div class="foot">
+      <button id="scancel" class="ghost">取消</button>
+      <button id="ssave">保存并生效</button>
+    </div>
+    <div id="smsg" class="msg"></div>
+  </div>
+</div>
+
+<div class="mask" id="welmask">
+  <div class="dlg">
+    <h2>欢迎使用 PaperPilot 🎉</h2>
+    <div class="sub">本地学术文献工作台：<b>输入主题 → 自动检索顶刊 → 下载正版 PDF → 自动精读入库 → 调研报告</b>。<br>
+      首次使用请填一次你自己的 API Key（OpenAI 兼容接口均可），保存后开箱即用，不再打扰。</div>
+    <div class="field">
+      <label>API Key</label>
+      <input id="w_key" type="password" placeholder="sk-..." style="width:100%">
+    </div>
+    <div class="row">
+      <div class="field grow"><label>Base URL（OpenAI 兼容接口）</label><input id="w_url"></div>
+      <div class="field" style="width:260px"><label>模型 <span class="s" style="opacity:.7">（点🔄拉取可选列表）</span></label>
+        <div class="row" style="gap:6px">
+          <input id="w_model" list="dl_models" class="grow">
+          <button id="w_models" class="ghost" style="white-space:nowrap" title="用上方 Base URL 和 API Key 拉取可用的模型列表，不用猜">🔄</button>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>OpenAlex API Key（可选，解锁每天 $1 独立检索额度）</label>
+      <input id="w_oa" type="password" placeholder="留空则用共享额度" style="width:100%">
+      <div class="tip">免费申请：<code>POST https://api.openalex.org/api-keys {"email":"你的邮箱"}</code>，再点邮件里的激活链接。不填也能用。</div>
+    </div>
+    <div id="wmsg" class="msg"></div>
+    <div class="foot">
+      <button id="wskip" class="ghost">稍后再说</button>
+      <button id="wtest" class="ghost">测试连接</button>
+      <button id="wsave">保存并开始</button>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="aboutmask">
+  <div class="dlg">
+    <h2>关于 PaperPilot <span id="ab_ver" class="st b" style="margin-left:6px"></span></h2>
+    <div class="sub">本地文献工作台：检索 → 打分 → 下载 → 自动精读 → 报告，全链闭环。完全自包含，不依赖任何外部 Agent/技能树。</div>
+    <table style="margin-bottom:14px">
+      <tr><th style="width:130px">项目</th><th>值</th></tr>
+      <tr><td class="s">文献库</td><td class="t" id="ab_lib">-</td></tr>
+      <tr><td class="s">PDF / 笔记 / 缺口</td><td class="t" id="ab_stats">-</td></tr>
+      <tr><td class="s">LLM 模型</td><td class="t" id="ab_model">-</td></tr>
+      <tr><td class="s">API Key</td><td class="t" id="ab_key">-</td></tr>
+      <tr><td class="s">OpenAlex Key</td><td class="t" id="ab_oa">-</td></tr>
+      <tr><td class="s">自包含</td><td class="t" id="ab_indep">-</td></tr>
+      <tr><td class="s">运行端口</td><td class="t" id="ab_port">-</td></tr>
+      <tr><td class="s">数据目录</td><td class="t" id="ab_data" style="word-break:break-all">-</td></tr>
+    </table>
+    <div class="hint">EBSCO 机构通道：UTD ISSN 自动路由（OA 失败后 → EBSCO → ScienceDirect）。日志与排障见「日志」按钮。</div>
+    <div class="foot"><button id="about_close" class="ghost">关闭</button></div>
+  </div>
+</div>
+
+<div class="mask" id="logmask">
+  <div class="dlg" style="width:760px">
+    <h2>运行日志 <span id="lg_meta" class="s"></span></h2>
+    <div class="sub">文件：<code id="lg_path">-</code>。打包态没有控制台，从这里看启动/请求/异常。</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button id="lg_refresh" class="ghost">刷新</button>
+      <button id="lg_clear" class="ghost">清空日志</button>
+    </div>
+    <pre id="lg_body" style="max-height:60vh;overflow:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font:12px/1.5 Consolas,monospace;color:var(--text);white-space:pre-wrap;word-break:break-all"></pre>
+    <div class="foot"><button id="log_close" class="ghost">关闭</button></div>
+  </div>
+</div>
+
+<div class="mask" id="topicmask">
+  <div class="dlg" style="width:620px">
+    <h2>主题书架</h2>
+    <div class="sub">主题来自笔记 frontmatter 的 tags。点主题名 → 用它检索；可重命名 / 删除（批量改写全库笔记）。</div>
+    <div style="max-height:50vh;overflow:auto" id="topiclist">加载中…</div>
+    <div class="hint">新增主题：给任意笔记加 tag（或在笔记里写 <code>tags</code>）后刷新即出现在这里。删除不可撤销。</div>
+    <div class="foot"><button id="topic_close" class="ghost">关闭</button></div>
+  </div>
+</div>
+
+<main>
+  <div class="tabs">
+    <button class="tab active" data-p="p2">⚡ 雷达</button>
+    <button class="tab" data-p="p1">📚 文库</button>
+  </div>
+
+  <section id="p1" class="panel">
+    <div class="card">
+      <div class="row">
+        <div class="grow"><label>关键词（中英混用，空格分隔）</label>
+          <input id="q1" class="grow" placeholder="例如：库存管理   /   robust VRP"></div>
+        <div><label>主题书架（可空）</label><input id="topic1" placeholder="城市末端配送"></div>
+        <div><label>条数</label>
+          <select id="top1"><option>10</option><option>20</option><option>30</option><option>50</option></select></div>
+        <button id="b1">检索</button>
+        <button id="b1r" class="ghost">最近入库</button>
+        <label style="margin:0;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="onlystar" style="width:auto"> 只看星标</label>
+      </div>
+      <div class="hint">命中字段加权：标题×4 &gt; 文件名/tags×3 &gt; scenario/一句话×2 &gt; 创新点×1.5 &gt; 关联×1；同义词表自动扩展。</div>
+      <div class="row" style="margin-top:8px">
+        <button id="btopics" class="ghost">📚 主题书架</button>
+        <button id="b1c" class="ghost">解析层自检</button>
+        <span class="hint" style="margin:0">
+          0 命中时先点这个：能分清「库里真没有」和「skill 输出格式变了导致解析失败」</span>
+      </div>
+      <div id="m1" class="msg"></div>
+    </div>
+    <div class="card" id="r1"><div class="empty">输入关键词开始检索</div></div>
+  </section>
+
+  <section id="p2" class="panel active">
+    <div class="card" style="text-align:center;padding:30px 20px 22px;border-color:var(--accent)">
+      <div style="font-size:21px;font-weight:600;margin-bottom:2px">要调研什么研究方向？</div>
+      <div class="s" style="margin-bottom:16px">输入主题找文献 → 列表里挑 → 一键下载并精读（全程规范命名 + R1-R12 校验）</div>
+      <div class="row" style="justify-content:center;align-items:center;gap:10px;margin-bottom:10px">
+        <input id="tptext" class="grow" style="max-width:480px;font-size:15px;padding:11px 14px" placeholder="研究方向，如：库存管理 / 2E-VRP / 供应链韧性……（几个字也行，相关的也会找到）">
+        <button id="bts" style="font-size:15px;padding:11px 24px">🔍 找文献</button>
+        <button id="btp" class="ghost" style="font-size:13px;padding:9px 14px" title="跳过手动挑选：自动打分→自动下载→自动精读→报告">🚀 全自动</button>
+      </div>
+      <div class="s" style="font-size:11px;color:var(--faint);margin:-2px 0 10px;line-height:1.7">
+        「找文献」只检索，先看列表再决定；「全自动」会接着下载 + 精读 + 出报告，<b>约 10 分钟</b>，并按篇数消耗你的 API 额度
+      </div>
+      <div class="row" style="justify-content:center;align-items:center">
+        <label style="margin:0;display:flex;align-items:center;gap:6px;cursor:pointer" title="全库检索 + UTD/旗舰刊专项保底，顶刊打★并加权排前；勾选后只在顶刊池（TR/INFORMS/IEEE 等 22 刊）里找，少而精">
+          <input type="checkbox" id="tponly" style="width:auto">
+          <span>仅顶刊池<span id="tponlylbl" style="color:var(--accent)"></span></span></label>
+        <details id="advbox" style="font-size:13px">
+          <summary style="cursor:pointer;color:var(--muted)">高级</summary>
+          <div class="row" style="justify-content:center;margin-top:10px;align-items:center">
+            <div><label>回看窗口</label>
+              <select id="tpdays"><option value="180">近半年</option>
+                <option value="365">近 1 年</option><option value="730" selected>近 2 年</option>
+                <option value="1825">近 5 年</option></select></div>
+            <div><label>入选阈值(全自动/LLM挑选)</label>
+              <select id="tps"><option>60</option><option selected>70</option><option>80</option></select></div>
+            <div><label>全自动篇数</label>
+              <select id="tpn"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></div>
+            <div><label>精读并发</label>
+              <select id="w3"><option selected>1</option><option>2</option><option>3</option><option>4</option></select></div>
+          </div>
+          <div class="row" style="justify-content:center;margin-top:8px">
+            <button id="bsc" class="ghost" style="padding:4px 10px;font-size:12px">LLM 打分（用候选池）</button>
+            <button id="brd" class="ghost" style="padding:4px 10px;font-size:12px">精读上次下载</button>
+            <button id="bdv" class="ghost" style="padding:4px 10px;font-size:12px">出报告收尾</button>
+          </div>
+          <div class="hint" style="margin-top:6px">并发>1 会同时发多个 LLM 请求，端点有每分钟 token 上限，撞上 429。</div>
+        </details>
+      </div>
+      <div id="mtp" class="msg" style="text-align:left"></div>
+    </div>
+
+    <div class="card" id="jobcard" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <h3 style="margin:0;font-size:14px">任务 <span id="jkind" class="st b"></span>
+          <span id="jstatus" class="st"></span></h3>
+        <span class="s" id="jcreated"></span>
+        <button id="bstop" class="ghost" style="display:none;padding:3px 14px;font-size:12px"
+          title="停止当前任务：当前这篇/这一阶段做完就停，已完成的下载与精读全部保留，剩余可稍后重跑补齐">⏹ 停止</button>
+      </div>
+      <div style="height:6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;overflow:hidden">
+        <div id="jbar" style="height:100%;width:0;background:var(--accent);transition:width .3s"></div>
+      </div>
+      <div class="s" id="jptext" style="margin-top:6px;min-height:18px;font-size:13px;color:var(--text)"></div>
+      <div id="papers" style="margin-top:8px"></div>
+      <details id="jlogbox" style="margin-top:10px">
+        <summary class="s" style="cursor:pointer;color:var(--muted);font-size:12px">任务日志（出错时自动展开）</summary>
+        <pre id="jlog" style="margin:8px 0 0;padding:10px;background:var(--bg);border:1px solid var(--border);
+        border-radius:8px;font:12px/1.7 Consolas,monospace;max-height:280px;overflow:auto;white-space:pre-wrap"></pre>
+      </details>
+      <div id="jresult" style="margin-top:10px"></div>
+      <div id="m3" class="msg" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="align-items:center;margin-bottom:8px">
+        <h3 style="margin:0;font-size:14px">最近调研</h3>
+        <span class="grow"></span>
+        <button id="bhr" class="ghost">刷新</button>
+      </div>
+      <div id="jhist" class="s">加载中…</div>
+      <div class="hint">任务落盘在 <code>data/jobs.json</code>，重启也能看回；没跑完的标「中断」，可一键重跑。</div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="align-items:center;margin-bottom:8px;flex-wrap:wrap">
+        <h3 style="margin:0;font-size:14px">找到的文献</h3>
+        <span class="s" id="rlbl" style="flex:1;min-width:120px">勾选想读的，点右侧下载（自动规范命名 + 精读入库）</span>
+        <button id="bpick" class="ghost" title="LLM 逐篇读摘要按五维打分，自动勾选值得读的（≥阈值且证据充分）">🤖 LLM 挑选</button>
+        <button id="bdl2">⬇️ 下载并精读已勾选 (<span id="ckn">0</span>)</button>
+        <button id="bq" class="ghost" title="重新读取最近一次检索的候选">刷新</button>
+      </div>
+      <div class="row" id="qsel" style="align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="s" style="opacity:.85">快捷勾选：</span>
+        <button class="ghost" data-q="all"   style="padding:3px 10px;font-size:12px" title="勾选列表里的全部论文">全部 <b id="qn-all">0</b></button>
+        <button class="ghost" data-q="top"   style="padding:3px 10px;font-size:12px" title="勾选所有顶刊池命中（★标记）的论文">顶刊 <b id="qn-top">0</b></button>
+        <button class="ghost" data-q="utd"   style="padding:3px 10px;font-size:12px" title="勾选所有 UTD/旗舰层（MS/OR/M&SOM/POM/IJOC/MOR/TS）论文">UTD/旗舰 <b id="qn-utd">0</b></button>
+        <button class="ghost" data-q="head"  style="padding:3px 10px;font-size:12px" title="勾选当前排序（初筛分降序）的前 20 篇">前 20</button>
+        <button class="ghost" data-q="none"  style="padding:3px 10px;font-size:12px" title="清空所有勾选">清空</button>
+        <span class="s" style="opacity:.7">（快捷勾选是替换不是叠加，可再手动增删）</span>
+        <span class="grow"></span>
+        <button class="ghost" id="bxb" style="padding:3px 10px;font-size:12px"
+          title="导出已勾选文献的 BibTeX（没勾就导出当前列表）；作者与卷期页会按 DOI 从 Crossref 自动补齐">导出 BibTeX</button>
+        <button class="ghost" id="bxr" style="padding:3px 10px;font-size:12px"
+          title="导出 RIS，EndNote / Zotero / NoteExpress 可直接导入">RIS</button>
+      </div>
+      <div id="r2"><div class="empty">还没有文献——在上面输入研究方向，点「🔍 找文献」。</div></div>
+    </div>
+  </section>
+
+
+</main>
+
+<script>
+// file:// 守卫：直接双击 web/index.html 是打不开后端的（v1.4 满屏「Failed to fetch」的成因之一）。
+// 正确入口是双击 PaperPilot.exe，浏览器会自动打开 http://127.0.0.1:8734。
+if(location.protocol==='file:'){
+  document.body.innerHTML='<div style="max-width:640px;margin:80px auto;padding:32px;border:1px solid #EF9F27;'
+    +'border-radius:12px;background:#FAEEDA;color:#854F0B;font:15px/1.9 \'Segoe UI\',\'Microsoft YaHei\',sans-serif">'
+    +'<b>请通过 PaperPilot.exe 启动本软件</b><br><br>'
+    +'你现在是直接双击网页文件打开的（file:// 协议），网页无法连接本地后端服务，所有功能都会失败。<br><br>'
+    +'正确用法：回到 PaperPilot 文件夹，双击里面的 <b>PaperPilot.exe</b>，浏览器会自动打开操作界面。</div>';
+  throw new Error('blocked: file:// protocol');
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); $(t.dataset.p).classList.add('active');
+  if(t.dataset.p==='p3') loadJobHistory();
+}));
+
+function msg(el,kind,text){el.className='msg show '+kind;el.innerHTML=text;}
+function busy(btn,on){btn.disabled=on;btn.innerHTML=on?'<span class="spin"></span> 执行中':''+btn.dataset.label;}
+
+async function loadStats(){
+  try{
+    const d=await (await fetch('/api/library')).json();
+    if(d.error) throw new Error(d.error);
+    $('stats').innerHTML=[
+      ['PDF',d.pdf_count],['笔记',d.note_count],['待笔记化',d.ungapped]
+    ].map(([k,v])=>`<span class="stat">${k} <b>${v}</b></span>`).join('')
+      +`<span class="stat">${esc(d.pdf_root)}</span>`;
+  }catch(e){$('stats').innerHTML=`<span class="stat">状态读取失败：${esc(e.message)}</span>`;}
+  try{
+    const h=await (await fetch('/api/health')).json();
+    if(h.version) $('ver').textContent='v'+h.version;
+  }catch(e){}
+}
+loadStats();
+
+async function loadSettings(){
+  try{
+    const d=await (await fetch('/api/settings')).json();
+    if(d.error) throw new Error(d.error);
+    $('s_url').value=d.llm.base_url||'';
+    $('s_model').value=d.llm.model||'';
+    $('s_lib').value=(d.library.root||'');
+    $('s_deflib').textContent=d.defaults.library_root;
+    // v1.0.3：把「当前实际生效的位置」显式写出来，并提示是否走了回退
+    if($('s_libnow')){
+      const fb=d.library.fallback_used;
+      $('s_libnow').innerHTML='当前实际生效：<code style="user-select:all">'
+        +esc(d.library.pdf_root||'')+'</code>（PDF）'
+        +(fb?'　<b style="color:#c60">注意：原本的目录不可用，已自动回退到「文档」</b>':'');
+    }
+    // v1.9.10：Sci-Hub 镜像与视觉模型（空=默认镜像 / 跟随主模型）
+    $('s_shen').checked=!!(d.scihub&&d.scihub.enabled);
+    $('s_shmir').value=(d.scihub&&d.scihub.mirrors)||'';
+    $('s_shmodel').value=(d.scihub&&d.scihub.vision_model)||'';
+    if(d.scihub&&d.scihub.default_mirrors) $('s_shmirdef').textContent=d.scihub.default_mirrors;
+    // v1.9.11：机构门户 opid（空=用安装包配置里的值）
+    $('s_ebsco').value=(d.ebsco&&d.ebsco.opid)||'';
+    // v1.0.7：浏览器会话模式 + 学校门户地址
+    $('s_brmode').value=(d.browser&&d.browser.mode)||'isolated';
+    $('s_brportal').value=(d.browser&&d.browser.portal_url)||'';
+    $('s_keytip').textContent=d.llm.configured
+      ? `当前已配置：${d.llm.api_key_masked}（留空则保持不变）`
+      : '当前未配置。填了才能用打分与精读。';
+    $('s_oamail').value=d.openalex.mailto||'';
+    $('s_oatip').textContent=d.openalex.configured
+      ? `当前已配置：${d.openalex.api_key_masked}（留空则保持不变）· 每天 $1 独立额度`
+      : '未配置，走共享额度。免费申请：POST https://api.openalex.org/api-keys {"email":"你的邮箱"}，再点邮件里的激活链接。';
+    $('keywarn').style.display=d.llm.configured?'none':'inline-block';
+    maybeWelcome(d.llm.configured, d.defaults||{});
+  }catch(e){console.error(e);}
+}
+loadSettings();
+$('keywarn').onclick=()=>$('setmask').classList.add('show');
+
+// 朋友版首启引导：key 未配置且没打过招呼 → 弹一次欢迎向导。
+// 个人版（key 已随包内置）configured=true，永远不会看到这个弹窗。
+function maybeWelcome(configured, defaults){
+  if(configured) return;
+  if(localStorage.getItem('paperpilot_welcomed')) return;
+  $('w_url').value=defaults.base_url||'';
+  $('w_model').value=defaults.model||'';
+  $('welmask').classList.add('show');
+}
+$('wskip').onclick=()=>{
+  localStorage.setItem('paperpilot_welcomed','1');
+  $('welmask').classList.remove('show');
+};
+$('welmask').onclick=e=>{if(e.target===$('welmask')) $('welmask').classList.remove('show');};
+$('wtest').onclick=async()=>{
+  const btn=$('wtest');btn.disabled=true;btn.textContent='测试中…';
+  msg($('wmsg'),'','')
+  try{
+    const r=await (await fetch('/api/test-llm',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({api_key:$('w_key').value.trim(),base_url:$('w_url').value.trim(),
+        model:$('w_model').value.trim()})})).json();
+    if(r.ok) msg($('wmsg'),'ok',`✓ 连通 · 模型 ${esc(r.model)} · ${r.latency_ms}ms`);
+    else msg($('wmsg'),'err',`✗ 失败：${esc(r.error||'未知错误')}`);
+  }catch(e){msg($('wmsg'),'err','测试失败：'+esc(e.message));}
+  btn.disabled=false;btn.textContent='测试连接';
+};
+$('wsave').onclick=async()=>{
+  if(!$('w_key').value.trim()) return msg($('wmsg'),'err','请先填 API Key');
+  msg($('wmsg'),'ok','保存中…');
+  try{
+    const body={llm:{base_url:$('w_url').value.trim(),model:$('w_model').value.trim(),
+                     api_key:$('w_key').value.trim()},
+                openalex:{api_key:$('w_oa').value.trim()}};
+    const r=await (await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)})).json();
+    if(r.error) throw new Error(r.error);
+    localStorage.setItem('paperpilot_welcomed','1');
+    $('welmask').classList.remove('show');
+    await loadSettings(); await loadStats();
+  }catch(e){msg($('wmsg'),'err',esc(e.message));}
+};
+$('bset').onclick=()=>{loadSettings();$('setmask').classList.add('show');};
+$('scancel').onclick=()=>$('setmask').classList.remove('show');
+$('setmask').onclick=e=>{if(e.target===$('setmask'))$('setmask').classList.remove('show');};
+
+// v1.9.4 模型列表拉取：填好 Base URL/Key 后点🔄，GET {base}/models 填进 datalist，
+// 模型框变成"可下拉选、也可手输"。拉取失败不挡路（有的中转站不开放 /models）。
+async function fetchModelList(btn,urlEl,keyEl,modelEl,show){
+  btn.disabled=true;btn.textContent='…';
+  try{
+    const r=await (await fetch('/api/list-models',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({base_url:urlEl.value.trim(),api_key:keyEl.value.trim()})})).json();
+    if(r.ok&&r.models&&r.models.length){
+      $('dl_models').innerHTML=r.models.map(m=>`<option value="${esc(m)}"></option>`).join('');
+      show('ok',`✓ 拿到 <b>${r.models.length}</b> 个模型——点一下模型框即可下拉选择（也可继续手输）`);
+      modelEl.focus();
+    }else show('err',`✗ ${esc(r.error||'未拿到模型列表')}——仍可手填模型名`);
+  }catch(e){show('err','请求失败：'+esc(e.message));}
+  btn.disabled=false;btn.textContent='🔄';
+}
+$('w_models').onclick=()=>fetchModelList($('w_models'),$('w_url'),$('w_key'),$('w_model'),
+  (t,h)=>msg($('wmsg'),t,h));
+$('s_models').onclick=()=>fetchModelList($('s_models'),$('s_url'),$('s_key'),$('s_model'),
+  (t,h)=>{const el=$('s_keytip');el.innerHTML=h;el.style.color=(t==='ok')?'':'var(--warn)';});
+
+// 深色/浅色主题（记忆在 localStorage，首次跟随系统）
+(function initTheme(){
+  const saved=localStorage.getItem('paperpilot_theme');
+  const dark=saved? saved==='dark' : (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  $('btheme').textContent=dark?'☀️':'🌙';
+})();
+$('btheme').onclick=()=>{
+  const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('paperpilot_theme',next);
+  $('btheme').textContent=next==='dark'?'☀️':'🌙';
+};
+
+// 关于：版本 / 库 / 模型 / 自包含状态
+async function loadAbout(){
+  try{
+    const [h,d,lib,set]=await Promise.all([
+      fetch('/api/health').then(r=>r.json()),
+      fetch('/api/diagnostics').then(r=>r.json()),
+      fetch('/api/library').then(r=>r.json()),
+      fetch('/api/settings').then(r=>r.json()),
+    ]);
+    $('ab_ver').textContent='v'+(h.version||'');
+    $('ab_lib').textContent=lib.pdf_root||'-';
+    $('ab_stats').textContent=`${lib.pdf_count} / ${lib.note_count} / ${lib.ungapped}`;
+    $('ab_model').textContent=(d.llm_model||'-')+((set.llm.base_url||'')?`  @ ${set.llm.base_url}`:'');
+    $('ab_key').textContent=d.llm_key_configured?'已配置':'未配置';
+    $('ab_oa').textContent=set.openalex.configured?'已配置（独立额度）':'未配置（共享额度）';
+    $('ab_indep').textContent=d.agent_independent?'✅ 完全自包含（脚本在包内）':'⚠ 依赖外部树';
+    $('ab_port').textContent=location.port||'8734';
+    $('ab_data').textContent=d.data_dir||'-';
+  }catch(e){$('ab_data').textContent='加载失败：'+e.message;}
+}
+$('babout').onclick=()=>{loadAbout();$('aboutmask').classList.add('show');};
+$('about_close').onclick=()=>$('aboutmask').classList.remove('show');
+$('aboutmask').onclick=e=>{if(e.target===$('aboutmask'))$('aboutmask').classList.remove('show');};
+
+// 运行日志（打包态没有控制台，从这里排障）
+async function loadLog(){
+  try{
+    const d=await (await fetch('/api/logs?lines=300')).json();
+    $('lg_path').textContent=d.path||'-';
+    $('lg_meta').textContent=`${d.lines} 行`;
+    $('lg_body').textContent=d.log||'(日志为空)';
+    $('lg_body').scrollTop=$('lg_body').scrollHeight;
+  }catch(e){$('lg_body').textContent='加载失败：'+e.message;}
+}
+$('blog').onclick=()=>{loadLog();$('logmask').classList.add('show');};
+$('lg_refresh').onclick=loadLog;
+$('lg_clear').onclick=async()=>{
+  const r=await (await fetch('/api/logs/clear',{method:'POST'})).json();
+  if(r.ok){loadLog();}
+  else{$('lg_body').textContent='清空失败：'+(r.error||'未知错误');}
+};
+$('log_close').onclick=()=>$('logmask').classList.remove('show');
+$('logmask').onclick=e=>{if(e.target===$('logmask'))$('logmask').classList.remove('show');};
+$('ssave').onclick=()=>saveSettings({});
+
+// v1.0.3：文献库位置的三件套——选择 / 打开 / 恢复默认
+// 抽成独立函数，避免和主保存按钮各写一份 body 导致字段漂移。
+async function saveSettings(extraLib){
+  const body={llm:{base_url:$('s_url').value.trim(),model:$('s_model').value.trim(),
+                   api_key:$('s_key').value.trim()},
+              openalex:{api_key:$('s_oa').value.trim(),mailto:$('s_oamail').value.trim()},
+              scihub:{enabled:$('s_shen').checked,
+                      mirrors:$('s_shmir').value.trim(),
+                      vision_model:$('s_shmodel').value.trim()},
+              ebsco:{opid:$('s_ebsco').value.trim()},
+              browser:{mode:$('s_brmode').value,portal_url:$('s_brportal').value.trim()},
+              library:Object.assign({root:$('s_lib').value.trim()}, extraLib||{})};
+  msg($('smsg'),'ok','保存中…');
+  try{
+    const r=await (await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)})).json();
+    if(r.error) throw new Error(r.error);
+    msg($('smsg'),'ok',esc(r.note)+`　库：${esc(r.library.pdf_root)}`);
+    $('s_key').value=''; $('s_oa').value='';
+    await loadSettings(); await loadStats();
+    setTimeout(()=>$('setmask').classList.remove('show'),900);
+  }catch(e){msg($('smsg'),'err',esc(e.message));}
+}
+
+if($('b_libpick')) $('b_libpick').onclick=async()=>{
+  const btn=$('b_libpick'); const old=btn.textContent;
+  btn.disabled=true; btn.textContent='选择中…';
+  msg($('smsg'),'ok','已弹出系统选择框，请在弹出的窗口里选文件夹…');
+  try{
+    const r=await (await fetch('/api/pick-folder',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({initial:$('s_lib').value.trim()})})).json();
+    if(r.ok && r.path){
+      $('s_lib').value=r.path;
+      msg($('smsg'),'ok',`已选择：${esc(r.path)}　（点「保存设置」后生效）`);
+    }else{
+      msg($('smsg'),'err',esc(r.error||'未选择文件夹'));
+    }
+  }catch(e){msg($('smsg'),'err','打不开选择框：'+esc(e.message));}
+  finally{btn.disabled=false; btn.textContent=old;}
+};
+
+if($('b_libopen')) $('b_libopen').onclick=async()=>{
+  try{
+    const r=await (await fetch('/api/open-folder',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({which:'pdf'})})).json();
+    if(r.error) msg($('smsg'),'err',esc(r.error));
+    else msg($('smsg'),'ok','已在资源管理器打开：'+esc(r.path));
+  }catch(e){msg($('smsg'),'err','打开失败：'+esc(e.message));}
+};
+
+if($('b_libreset')) $('b_libreset').onclick=async()=>{
+  if(!confirm('把文献库位置恢复为默认（文档\\PaperPilotLibrary）？\n已有的 PDF 不会被移动。')) return;
+  $('s_lib').value='';
+  await saveSettings({reset_default:true});
+};
+
+// 设置：连通性测试（LLM / OpenAlex）
+async function testConn(which,btn,tipEl){
+  btn.disabled=true;const label=btn.dataset.label;btn.innerHTML='<span class="spin"></span> 测试中';
+  tipEl.textContent='测试中…';tipEl.style.color='var(--muted)';
+  try{
+    const body=which==='llm'
+      ?{api_key:$('s_key').value.trim(),base_url:$('s_url').value.trim(),model:$('s_model').value.trim()}
+      :{api_key:$('s_oa').value.trim()};
+    const r=await (await fetch('/api/test-'+which,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)})).json();
+    if(which==='llm'){
+      if(r.ok){
+        tipEl.innerHTML=`✓ 连通 · 模型 ${esc(r.model)} · ${r.latency_ms}ms${r.reply?` · 回复「${esc(r.reply)}」`:''}`;
+        tipEl.style.color='var(--accent)';
+      }else{
+        tipEl.innerHTML=`✗ 失败：${esc(r.error||'未知错误')}`;
+        tipEl.style.color='var(--warn)';
+      }
+    }else{
+      if(r.activated){
+        tipEl.innerHTML=`✓ key 已激活 · 独立额度 $${r.limit_usd}/天 · ${r.latency_ms}ms`;
+        tipEl.style.color='var(--accent)';
+      }else if(r.with_key&&r.status_code===403){
+        tipEl.innerHTML='✗ key 尚未激活：请点开邮件「Activate your OpenAlex API key」里的链接（7 天内有效），之后无需改任何配置';
+        tipEl.style.color='var(--warn)';
+      }else if(r.ok){
+        tipEl.innerHTML=`✓ 连通（未填 key，共享额度 $${r.limit_usd}/天）· ${r.latency_ms}ms`;
+        tipEl.style.color='var(--accent)';
+      }else{
+        tipEl.innerHTML=`✗ 失败：${esc(r.error||'未知错误')}${r.status_code?`（HTTP ${r.status_code}）`:''}`;
+        tipEl.style.color='var(--warn)';
+      }
+    }
+  }catch(e){tipEl.textContent='测试失败：'+e.message;tipEl.style.color='var(--warn)';}
+  btn.disabled=false;btn.innerHTML=label;
+}
+$('st_llm').dataset.label='测试连接';
+$('st_oa').dataset.label='测试连接';
+$('st_llm').onclick=()=>testConn('llm',$('st_llm'),$('s_keytip'));
+$('st_oa').onclick=()=>testConn('openalex',$('st_oa'),$('s_oatip'));
+$('b_inst').onclick=async()=>{
+  const b=$('b_inst'),tip=$('s_insttip');
+  b.disabled=true;const old=b.textContent;b.textContent='打开中…';
+  try{
+    const r=await fetch('/api/institutional-login',{method:'POST'});
+    const d=await r.json();
+    if(!r.ok||d.error){msg(tip,'err',d.error||'打开失败');}
+    else{msg(tip,'ok',d.note||('已打开机构登录窗口，请在窗口里用学校账号登录一次。'));}
+  }catch(e){msg(tip,'err','网络错误：'+e);}
+  b.disabled=false;b.textContent=old;
+};
+
+// 顶刊池数量（TR/INFORMS/IEEE 等），显示在「仅顶刊池（N 刊）」标签里
+async function loadPool(){
+  try{
+    const d=await (await fetch('/api/journal-pool')).json();
+    if($('tponlylbl')) $('tponlylbl').textContent=`（${d.count} 刊）`;
+  }catch(e){}
+}
+loadPool();
+
+function renderLocal(d){
+  // 解析层告警优先：0 命中时得分清是「库里真没有」还是「格式变了没解析出来」
+  const warn=d.warning?`<div class="msg show err" style="margin:0 0 10px">
+    <b>⚠ 解析层告警</b><br>${esc(d.warning)}</div>`:'';
+  const only=$('onlystar').checked;
+  const items=(d.items||[]).filter(it=>!only||it.starred);
+  if(!d.count) return warn+'<div class="empty">无命中。换关键词，或用「最近入库」看库存。</div>';
+  if(!items.length) return warn+'<div class="empty">没有星标笔记。点结果里的 ☆ 给重要笔记加星标。</div>';
+  const head=`<div class="hint" style="margin:0 0 10px">${esc(d.header||'')}`
+    +(d.synonyms_expanded?` · 同义词扩展 +${d.synonyms_expanded} 个变体`:'')+'</div>';
+  const rows=items.map(it=>`<tr>
+    <td class="t"><a href="${esc(it.obsidian_uri||'#')}">${esc(it.stem)}</a></td>
+    <td><span class="st">${esc(it.type)}</span></td>
+    <td class="s">${esc(it.one||'')}</td>
+    <td class="s">${it.tags.map(esc).join(' · ')}</td>
+    <td style="white-space:nowrap">${it.starred?'<span class="st g">⭐</span>':''}<button class="ghost starbtn" data-path="${esc(it.path||'')}" data-star="${it.starred?'1':'0'}" title="星标" style="padding:2px 8px;font-size:13px">${it.starred?'⭐':'☆'}</button></td></tr>`).join('');
+  return warn+head+`<table><tr><th style="width:34%">笔记</th><th style="width:70px">类型</th>
+    <th>一句话</th><th style="width:18%">主题</th><th style="width:64px">星标</th></tr>${rows}</table>`;
+}
+
+$('b1').dataset.label='检索';$('b1r').dataset.label='最近入库';
+
+$('b1').onclick=async()=>{
+  const q=$('q1').value.trim(); if(!q) return msg($('m1'),'err','先输入关键词');
+  busy($('b1'),true);msg($('m1'),'');
+  try{
+    const r=await (await fetch('/api/local-search',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:q,top:+$('top1').value,topic:$('topic1').value.trim()})})).json();
+    if(r.error) throw new Error(r.error);
+    $('r1').innerHTML=renderLocal(r);
+  }catch(e){msg($('m1'),'err',esc(e.message));}
+  busy($('b1'),false);
+};
+$('q1').addEventListener('keydown',e=>{if(e.key==='Enter')$('b1').click()});
+
+// 解析层自检：真跑一次 vault_search，看输出还认不认得出来
+$('b1c').dataset.label='解析层自检';
+$('b1c').onclick=async()=>{
+  busy($('b1c'),true);msg($('m1'),'ok','正在跑一次真实检索，检查输出格式…');
+  try{
+    const d=await (await fetch('/api/parse-check')).json();
+    if(d.error) throw new Error(d.error);
+    if(d.ok){
+      if(d.empty){
+        msg($('m1'),'ok','解析层正常（当前库还是空的，检索到 0 条属正常——'
+          +'先跑一次检索/导入 PDF 就会有内容了）');
+      }else{
+        msg($('m1'),'ok',`解析正常：解析出 <b>${d.count}</b> 条`
+          +`${d.markers_seen&&d.markers_seen.length?`（识别到格式标记：${d.markers_seen.map(esc).join('、')}）`:''}`);
+      }
+    }else{
+      msg($('m1'),'err',`<b>解析层异常</b><br>${esc(d.warning||d.reason||'未知')}`
+        +`${d.sample?`<br><br>脚本输出开头：<br><code style="word-break:break-all">${esc(d.sample)}</code>`:''}`);
+    }
+  }catch(e){msg($('m1'),'err',esc(e.message));}
+  busy($('b1c'),false);
+};
+
+$('b1r').onclick=async()=>{
+  busy($('b1r'),true);msg($('m1'),'');
+  try{
+    const r=await (await fetch('/api/recent',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({n:+$('top1').value||10})})).json();
+    if(r.error) throw new Error(r.error);
+    $('r1').innerHTML=renderLocal(r);
+  }catch(e){msg($('m1'),'err',esc(e.message));}
+  busy($('b1r'),false);
+};
+$('onlystar').onchange=()=>{
+  if($('q1').value.trim()) $('b1').click();
+  else if($('r1').querySelector('table')) $('b1r').click();
+};
+
+// 星标：点击 ☆/⭐ 切换（事件委托，结果表里的按钮都能用）
+$('r1').addEventListener('click',async e=>{
+  const b=e.target.closest('.starbtn');
+  if(!b) return;
+  const path=b.dataset.path; if(!path) return;
+  const star=b.dataset.star!=='1';
+  b.disabled=true;
+  try{
+    const r=await (await fetch('/api/star',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({path,starred:star})})).json();
+    if(r.error) throw new Error(r.error);
+    b.dataset.star=star?'1':'0';
+    b.textContent=star?'⭐':'☆';
+  }catch(err){msg($('m1'),'err','星标失败：'+esc(err.message));}
+  b.disabled=false;
+});
+
+// 主题书架：查看/按主题检索/重命名/删除
+async function loadTopics(){
+  try{
+    const d=await (await fetch('/api/topics')).json();
+    const rows=(d.topics||[]).map(t=>`<div class="row" style="align-items:center;margin-bottom:6px;flex-direction:row">
+      <button class="ghost" data-topic="${esc(t.topic)}" style="flex:1;text-align:left;padding:6px 10px;min-width:0">${esc(t.topic)} <span class="s">(${t.count})</span></button>
+      <button class="ghost" data-rename="${esc(t.topic)}" style="padding:4px 10px">重命名</button>
+      <button class="ghost" data-del="${esc(t.topic)}" style="padding:4px 10px">删除</button>
+    </div>`).join('')||'<div class="empty">还没有主题。</div>';
+    $('topiclist').innerHTML=rows;
+    $('topiclist').querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>{
+      $('topic1').value=b.dataset.topic;
+      $('topicmask').classList.remove('show');
+      $('b1').click();
+    });
+    $('topiclist').querySelectorAll('[data-rename]').forEach(b=>b.onclick=()=>{
+      const old=b.dataset.rename;
+      const neu=prompt('重命名主题为：',old);
+      if(!neu||neu.trim()===old) return;
+      doRename(old,neu.trim());
+    });
+    $('topiclist').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+      const t=b.dataset.del;
+      if(!confirm('从全库所有笔记中删除主题「'+t+'」？不可撤销。')) return;
+      doDelete(t);
+    });
+  }catch(e){$('topiclist').textContent='加载失败：'+e.message;}
+}
+async function doRename(old,neu){
+  try{
+    const r=await (await fetch('/api/topics/rename',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({old,new:neu})})).json();
+    if(r.error) throw new Error(r.error);
+    msg($('m1'),'ok',`主题「${esc(old)}」→「${esc(neu)}」，改写 ${r.changed} 篇`);
+    loadTopics();loadStats();
+  }catch(e){msg($('m1'),'err','重命名失败：'+esc(e.message));}
+}
+async function doDelete(t){
+  try{
+    const r=await (await fetch('/api/topics/delete',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({topic:t})})).json();
+    if(r.error) throw new Error(r.error);
+    msg($('m1'),'ok',`已删除主题「${esc(t)}」，改写 ${r.changed} 篇`);
+    loadTopics();loadStats();
+  }catch(e){msg($('m1'),'err','删除失败：'+esc(e.message));}
+}
+$('btopics').onclick=()=>{loadTopics();$('topicmask').classList.add('show');};
+$('topic_close').onclick=()=>$('topicmask').classList.remove('show');
+$('topicmask').onclick=e=>{if(e.target===$('topicmask'))$('topicmask').classList.remove('show');};
+
+// ---------------------------------------------------------------- 任务（全链/分段）
+
+function renderResult(kind,r){
+  // 精读批量结果：数组 [{ok,rc,validate:{fails,warns},note}]
+  if(Array.isArray(r)){
+    if(r.length&&typeof r[0]==='object'&&r[0].note!=null){
+      const okN=r.filter(x=>x.ok).length;
+      const rows=r.map(it=>{
+        const v=it.validate||{};
+        const failsArr=Array.isArray(v.fails)?v.fails:[];
+        const warnsArr=Array.isArray(v.warns)?v.warns:[];
+        const failsN=typeof v.fails==='number'?v.fails:failsArr.length;
+        const warnsN=typeof v.warns==='number'?v.warns:warnsArr.length;
+        const flags=[]
+          .concat(failsArr.map(f=>`<span class="st y" title="FAIL">${esc(String(f).slice(0,90))}</span>`))
+          .concat(warnsArr.map(w=>`<span class="st b" title="WARN">${esc(String(w).slice(0,90))}</span>`)).join(' ')
+          || `<span class="st ${failsN>0?'y':'g'}">FAIL ${failsN} · WARN ${warnsN}</span>`;
+        const name=String(it.note||'').split(/[\\/]/).pop();
+        return `<tr>
+          <td>${it.ok?'<span class="st g">通过</span>':'<span class="st y">未通过</span>'}</td>
+          <td class="s">rc=${esc(it.rc)}</td>
+          <td class="s" style="word-break:break-all">${esc(name)}</td>
+          <td class="s" style="max-width:280px">${flags}</td></tr>`;
+      }).join('');
+      return `<div class="msg show ok">精读 <b>${r.length}</b> 篇 · 严格通过 <b>${okN}</b> / ${r.length}（R1-R12 外部复核）</div>
+        <table style="margin-top:8px"><tr><th style="width:70px">结果</th><th style="width:50px">rc</th><th>笔记</th><th>R1-R12 明细</th></tr>${rows}</table>`;
+    }
+    return `<div class="msg show ok">完成，共 ${r.length} 条结果</div>`;
+  }
+  if(r&&typeof r==='object'){
+    const parts=[];
+    if(r.scored!=null) parts.push(`复核 ${r.scored} · 入选 ${r.picked}`);
+    if(r.downloaded!=null) parts.push(`下载 ${r.downloaded} · 精读通过 ${r.read_ok} · 未通过 ${r.read_failed}`);
+    if(r.recommended!=null) parts.push(`推荐 ${r.recommended} · 低于阈值 ${r.below_threshold} · vault 卡片 ${(r.vault_cards||[]).length} · 去重历史 ${r.history_recorded}`);
+    if(r.discover!=null) parts.push(`候选 ${r.discover.articles}`);
+    if(r.queries&&r.queries.length) parts.push(`检索式 ${r.queries.length} 个`);
+    if(r.download_read) parts.push(`下载 ${r.download_read.downloaded||0} · 精读通过 ${r.download_read.read_ok||0} · 未通过 ${r.download_read.read_failed||0}`);
+    if(r.read&&Array.isArray(r.read)) parts.push(`精读 ${r.read.length}（通过 ${r.read.filter(x=>x.ok).length}）`);
+    if(r.deliver&&r.deliver.recommended!=null) parts.push(`报告推荐 ${r.deliver.recommended} · 卡片 ${(r.deliver.vault_cards||[]).length} · 历史 ${r.deliver.history_recorded}`);
+    let html=`<div class="msg show ${r.ok?'ok':'err'}">${esc(r.detail||'完成')}</div>`;
+    if(parts.length) html+=`<div class="hint" style="margin-top:8px">${parts.map(esc).join(' · ')}</div>`;
+    if(r.report) html+=`<div class="hint" style="margin-top:6px">📄 报告：<code>${esc(r.report)}</code></div>`;
+    if(r.deliver&&r.deliver.report) html+=`<div class="hint" style="margin-top:6px">📄 报告：<code>${esc(r.deliver.report)}</code></div>`;
+    if(r.warning) html+=`<div class="msg show err" style="margin-top:6px">⚠ ${esc(r.warning)}</div>`;
+    if(r.deliver&&r.deliver.warning) html+=`<div class="msg show err" style="margin-top:6px">⚠ ${esc(r.deliver.warning)}</div>`;
+    if(r.failed_articles&&r.failed_articles.length){
+      html+=`<div class="row" style="margin-top:8px">
+        <button class="ghost" id="retry_failed">↻ 重试失败 ${r.failed_articles.length} 篇（完成后自动精读）</button>
+        <span class="hint" style="margin:0">${esc((r.failed||[]).join('；').slice(0,200))}</span>
+      </div>`;
+    }
+    return html;
+  }
+  return `<div class="msg show ok">完成</div>`;
+}
+
+let polling=null;
+function stopPoll(){if(polling){clearInterval(polling);polling=null;}}
+function setJobUI(j){
+  const quiet=j.quiet_for||0, el=j.elapsed||0;
+  const [slabel,scls]=JSTATUS[j.status]||[j.status,'b'];
+  $('jkind').textContent=j.kind;
+  $('jstatus').textContent=slabel;
+  $('jstatus').className='st '+scls;
+  // v1.4.0：任务进行中显示「⏹ 停止」（协作式：这篇做完就停，成果保留）
+  const bstop=$('bstop');
+  if(bstop) bstop.style.display = j.status==='running' ? '' : 'none';
+  $('jcreated').textContent=`启动 ${j.created} · 已跑 ${el}s · 静默 ${quiet}s`;
+  $('jbar').style.width=Math.round((j.progress||0)*100)+'%';
+  const pct=Math.round((j.progress||0)*100);
+  $('jptext').textContent=(j.progress_text||'')+(j.progress_text?` · ${pct}%`:(pct?pct+'%':''));
+  $('jlog').textContent=(j.log||[]).join('\n');
+  $('jlog').scrollTop=$('jlog').scrollHeight;
+  // v1.9.13：日志默认收起，任务出错（或下载有失败篇目）时自动展开——
+  // 排障信息该在需要时出现，不该一开任务就糊一屏技术文本。
+  if($('jlogbox') && (j.status==='error'
+      || (j.status==='done' && (j.result&&(j.result.failed_articles||[]).length)))){
+    $('jlogbox').open=true;
+  }
+  renderPapers(j);
+  if(j.status==='done'||j.status==='error'||j.status==='stopped'){
+    stopPoll();
+    loadJobHistory();      // 任务一结束就把历史刷出来
+    if(typeof jobOnDone==='function'){const cb=jobOnDone;jobOnDone=null;try{cb(j);}catch(e){console.error(e);}}
+  }
+  const box=$('jresult');
+  if((j.status==='done'||j.status==='stopped')&&j.result){
+    box.innerHTML=renderResult(j.kind,j.result);
+    const rb=$('retry_failed');
+    if(rb) rb.onclick=()=>{
+      rb.disabled=true;
+      const arts=j.result.failed_articles||[];
+      msg($('m3'),'ok',`重试 ${arts.length} 篇失败下载（完成后自动精读）…`);
+      launch('/api/jobs/download',{articles:arts,workers:+$('w3').value},'失败重试');
+    };
+  }else if(j.status==='error'){
+    box.innerHTML=`<div class="msg show err">${esc(j.error||'未知错误')}</div>`;
+  }else{
+    box.innerHTML = quiet>120
+      ? `<div class="msg show err">已静默 ${quiet}s。LLM 单篇 20-60s 属正常，超过 2 分钟多半是端点卡住，可重试。</div>` : '';
+  }
+}
+async function watch(jid,onDone){
+  stopPoll();
+  if(onDone) jobOnDone=onDone;
+  $('jobcard').style.display='block';
+  const poll=async()=>{
+    try{
+      const r=await (await fetch('/api/jobs/'+jid)).json();
+      if(r.error){stopPoll();return;}
+      setJobUI(r);
+    }catch(e){stopPoll();}
+  };
+  await poll();
+  polling=setInterval(poll,2000);
+}
+// v1.4.0：协作式停止——这篇/这一阶段做完就停，成果保留，剩余可重跑补齐
+$('bstop').onclick=async()=>{
+  if(!confirm('停止当前任务？\n当前这篇 / 这一阶段做完就停；已完成的下载与精读全部保留，剩余可稍后重跑补齐。')) return;
+  const b=$('bstop');
+  b.disabled=true;b.textContent='停止中…';
+  try{ await (await fetch('/api/jobs/stop',{method:'POST'})).json(); }catch(e){}
+  b.textContent='⏹ 停止';b.disabled=false;
+};
+// ---------------------------------------------------------------- 任务历史
+const JSTATUS={done:['完成','g'],error:['失败','y'],interrupted:['中断','y'],stopped:['已停止','y'],running:['进行中','b']};
+async function loadJobHistory(){
+  try{
+    const d=await (await fetch('/api/jobs')).json();
+    const js=(d.jobs||[]).slice(0,15);
+    if(!js.length){$('jhist').textContent='还没有任务记录。';return;}
+    $('jhist').innerHTML=`<table><tr><th style="width:90px">任务</th><th style="width:70px">状态</th>
+      <th style="width:80px">启动</th><th style="width:70px">耗时</th>
+      <th>进度 / 结果</th><th style="width:70px"></th></tr>`
+      +js.map(j=>{
+        const [label,cls]=JSTATUS[j.status]||[j.status,'b'];
+        const last=(j.log||[]).slice(-1)[0]||'';
+        return `<tr>
+          <td class="s">${esc(j.kind)}</td>
+          <td><span class="st ${cls}">${esc(label)}</span></td>
+          <td class="s">${esc(j.created||'')}</td>
+          <td class="s">${j.elapsed!=null?j.elapsed+'s':'—'}</td>
+          <td class="s" style="word-break:break-all">${esc(j.progress_text||last).slice(0,70)}</td>
+          <td>${j.can_rerun?`<button class="ghost" data-rerun="${esc(j.id)}"
+            style="padding:2px 8px;font-size:12px">重跑</button>`:''}</td></tr>`;
+      }).join('')+`</table>`;
+    $('jhist').querySelectorAll('[data-rerun]').forEach(b=>b.onclick=async()=>{
+      b.disabled=true;
+      try{
+        const r=await (await fetch('/api/jobs/'+b.dataset.rerun+'/rerun',
+          {method:'POST',headers:{'Content-Type':'application/json'}})).json();
+        if(r.error) throw new Error(r.error);
+        msg($('m3'),'ok','已按原参数重新启动，进度见下方任务面板…');
+        await watch(r.id);
+      }catch(e){msg($('m3'),'err',esc(e.message));}
+      b.disabled=false;loadJobHistory();
+    });
+  }catch(e){$('jhist').textContent='历史读取失败：'+e.message;}
+}
+$('bhr').onclick=loadJobHistory;
+
+async function launch(url,body,label){
+  msg($('m3'),'ok',label+' 已启动，进度见下方任务面板…');
+  // v1.9.13：新任务从「日志收起」开始，出错时会自动展开（见 watch 的渲染）
+  if($('jlogbox')) $('jlogbox').open=false;
+  try{
+    const r=await (await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)})).json();
+    if(r.error) throw new Error(r.error);
+    if(r.id) await watch(r.id);
+  }catch(e){msg($('m3'),'err',esc(e.message));}
+}
+$('bsc').onclick=()=>launch('/api/jobs/score',{query:$('tptext').value.trim(),top_n:+$('tpn').value,
+  min_score:+$('tps').value},'LLM 打分');
+$('bsc').dataset.label='LLM 打分（用候选池）';
+$('brd').dataset.label='精读上次下载';
+$('bdv').dataset.label='出报告收尾';
+$('b1').dataset.label='检索';
+$('b1r').dataset.label='最近入库';
+$('brd').onclick=async()=>{
+  const r=await (await fetch('/api/last-downloads')).json();
+  const pdfs=r.pdfs||[];
+  if(!pdfs.length) return msg($('m3'),'err','本次会话还没有下载过 PDF，先跑下载或全链');
+  msg($('m3'),'ok',`精读 ${pdfs.length} 篇已下载 PDF…`);
+  launch('/api/jobs/read',{pdfs:pdfs,workers:+$('w3').value},'精读任务');
+};
+$('bdv').onclick=()=>launch('/api/jobs/deliver',{},'报告收尾');
+
+// ---------------------------------------------------------------- 候选列表分页
+// 一次检索能回 192 篇，全量渲染 192 个 <tr> 会让表格卡在那儿；
+// 数据留在内存里，只渲染当前这一页。
+let d2list=[], d2topics='', d2page=0, d2size=50, d2check=new Set(), pickedList=null;
+var jobOnDone=null;
+
+function updCkn(){ if($('ckn')) $('ckn').textContent=d2check.size; }
+
+// 期刊分层徽标：UTD/旗舰（MS/OR/M&SOM/POM/IJOC/MOR/TS）> TR系 > IEEE系 > OR核心
+// tier 来自后端 _journal_tier；旧数据无 tier 时静默不显示
+const TIER_LABEL={UTD:'UTD/旗舰',TR:'TR系',IEEE:'IEEE系',OR:'OR核心'};
+function tierChip(a){
+  if(!a||!a.tier||!TIER_LABEL[a.tier]) return '';
+  const cls=a.tier==='UTD'?'st g':'st';
+  return `<span class="${cls}" style="margin-right:4px;font-weight:600" title="期刊分层：${TIER_LABEL[a.tier]}">${TIER_LABEL[a.tier]}</span>`;
+}
+
+function accChip(a){
+  // 可及性 = 后端 judge_accessibility 的**启发式粗判**，不是承诺；真实结局看下载日志。
+  const M={direct:['可直接下载','g','检索结果里已带免费全文直链'],
+           preprint:['预印本可下','g','有 arXiv 预印本，正式版取不到时会回退到它'],
+           login:['需机构权限','y','需要校园网 / 机构登录；不在校内时先在设置里打开机构登录窗口登一次'],
+           unknown:['未知','b','信息不足，不作保证']};
+  const m=M[a&&a.access]; if(!m) return '<span class="st">—</span>';
+  return `<span class="st ${m[1]}" title="${m[2]}（预判，非承诺）">${m[0]}</span>`;
+}
+
+function paintDiscover(){
+  if(!d2list.length){
+    $('r2').innerHTML='<div class="empty">还没有文献——输入研究方向，点「🔍 找文献」。</div>';
+    return;
+  }
+  const n=d2list.length;
+  const nLib=d2list.filter(a=>a.in_library).length;
+  const pages=Math.max(1,Math.ceil(n/d2size));
+  if(d2page>=pages) d2page=pages-1;
+  if(d2page<0) d2page=0;
+  const from=d2page*d2size, to=Math.min(n,from+d2size);
+  const body=d2list.slice(from,to).map((a,i)=>`<tr class="d2row" data-i="${from+i}" style="cursor:pointer" title="点击展开中英摘要">
+    <td style="width:30px"><input type="checkbox" class="ck-art" data-i="${from+i}" ${d2check.has(from+i)?'checked':''} style="width:auto"></td>
+    <td class="s" style="width:44px">${from+i+1}</td>
+    <td class="t">${esc(a.title||'(无题名)')}${a.top_journal?` <span class="st g" title="${esc(a.top_journal)}">★顶刊</span>`:''}${a.in_library?` <span class="st" title="库里已有这篇（判据：${a.library_basis==='doi'?'同一 DOI':'题名近似'}${a.library_file?'，文件：'+esc(a.library_file):''}）——勾选也不会重复下载">📚已有</span>`:''}</td>
+    <td class="s">${tierChip(a)}${esc(a.journal||'')}</td>
+    <td class="s" style="white-space:nowrap">${esc(a.publication_date||'')}</td>
+    <td><span class="st ${a.prescore>=70?'g':a.prescore>=40?'y':'b'}">${esc(a.prescore)}</span></td>
+    <td>${a.is_preprint?'<span class="st y">预印本</span>':'<span class="st">正式版</span>'}</td>
+    <td>${accChip(a)}</td>
+    <td class="s" style="word-break:break-all">${esc(a.doi||'')}</td></tr>`).join('');
+
+  const pager=`<div class="row" style="margin-top:10px;align-items:center;gap:8px">
+    <button id="d2prev" class="ghost" ${d2page?'':'disabled'}>上一页</button>
+    <span class="s">第 ${from+1}-${to} 条 / 共 <b>${n}</b> 条（第 ${d2page+1}/${pages} 页）</span>
+    <button id="d2next" class="ghost" ${d2page<pages-1?'':'disabled'}>下一页</button>
+    <span class="grow"></span>
+    <label class="s" style="margin:0">每页
+      <select id="d2size" style="width:auto;display:inline-block">
+        ${[25,50,100,200].map(v=>`<option value="${v}" ${v===d2size?'selected':''}>${v}</option>`).join('')}
+      </select> 条</label>
+  </div>`;
+
+  $('r2').innerHTML=`<table><tr><th style="width:30px">选</th><th style="width:44px">#</th><th>题名</th>
+    <th style="width:130px">期刊</th><th style="width:80px">日期</th>
+    <th style="width:56px">初筛</th><th style="width:64px">版本</th>
+    <th style="width:96px" title="按已知信号做的粗判，不是承诺：有免费直链/预印本=可下；白名单刊或未配机构权限=需登录">可及性</th>
+    <th style="width:20%">DOI</th></tr>${body}</table>
+    ${pager}
+    <div class="hint">初筛分含期刊分层加权（UTD/旗舰 45 > TR 25 > IEEE 20 > OR核心 15），只作排序；★=顶刊池命中。UTD/旗舰刊另有专项检索通道保底，不会因刊量小被挤出结果。「LLM 挑选」会逐篇读摘要打分后自动勾选值得读的。「可及性」是按已有信号做的<strong>粗判</strong>，不承诺——真实以下载日志的逐通道明细为准。${nLib?`本批里 <b>${nLib}</b> 篇标了 📚已有：库里已经有这篇（优先按 DOI 认出，其次题名近似），<strong>勾选也不会重复下载</strong>。`:''}</div>${d2topics}`;
+
+  $('r2').querySelectorAll('.ck-art').forEach(c=>c.onchange=()=>{
+    const i=+c.dataset.i;
+    if(c.checked) d2check.add(i); else d2check.delete(i);
+    updCkn();
+  });
+  $('r2').querySelectorAll('.d2row').forEach(tr=>tr.onclick=e=>{
+    if(e.target.closest('.ck-art')) return;   // 点勾选框不触发展开
+    toggleAbstract(+tr.dataset.i, tr);
+  });
+  $('d2prev').onclick=()=>{if(d2page>0){d2page--;paintDiscover();}};
+  $('d2next').onclick=()=>{if(d2page<pages-1){d2page++;paintDiscover();}};
+  $('d2size').onchange=e=>{d2size=+e.target.value;d2page=0;paintDiscover();};
+}
+
+// 行展开：英文摘要原文 + 懒加载中文翻译（缓存，重启失效可接受）
+const trCache={};
+function toggleAbstract(i, tr){
+  const ex=tr.nextElementSibling;
+  if(ex&&ex.classList.contains('absrow')){ ex.remove(); return; }
+  const a=d2list[i]; if(!a) return;
+  const row=document.createElement('tr');
+  row.className='absrow';
+  row.innerHTML=`<td colspan="8" style="background:var(--bg);border-left:3px solid var(--accent)">
+    <div style="font-size:13px;margin:4px 0 8px"><b>EN</b> · ${esc(a.title||'')}</div>
+    <div style="font-size:13px;line-height:1.7;margin-bottom:10px">${esc(a.abstract||'（该文献无摘要——OpenAlex/Crossref 未提供）')}</div>
+    <div class="zhbox" style="font-size:13px;line-height:1.7;color:var(--text)"><span class="spin"></span> 正在翻译…</div>
+  </td>`;
+  tr.after(row);
+  const zhbox=row.querySelector('.zhbox');
+  if(!(a.abstract||'').trim()){ zhbox.textContent=''; return; }
+  const key=(a.doi||a.title||'').toLowerCase();
+  if(trCache[key]){
+    zhbox.innerHTML=`<b>中</b> · ${esc(trCache[key].title_zh||'')}<br>${esc(trCache[key].abstract_zh||'')}`;
+    return;
+  }
+  fetch('/api/translate-abstract',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title:a.title,abstract:a.abstract})})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.error) throw new Error(d.error);
+      trCache[key]=d;
+      zhbox.innerHTML=`<b>中</b> · ${esc(d.title_zh||'')}<br>${esc(d.abstract_zh||'')}`;
+    })
+    .catch(e=>{zhbox.innerHTML=`<span class="st y">翻译失败</span> ${esc(e.message)}`;});
+}
+
+// 按篇展示：解析任务日志 → 论文清单（论文名称 | 期刊 | 状态）
+function renderPapers(j){
+  const box=$('papers'); if(!box) return;
+  const log=(j.log||[]).join('\n');
+  const dl=[], rd=[];
+  let cur=null, dlSavedPath='';
+  for(const ln of log.split('\n')){
+    let m=ln.match(/^\s*\[(\d+)\/(\d+)\]\s+(.+?)\s+\(10\./);
+    if(m){ const i=+m[1]-1;
+      cur={i,title:m[3].trim(),journal:(pickedList&&pickedList[i]&&pickedList[i].journal)||'',st:'下载中…',ch:''};
+      dl[i]=cur; continue; }
+    m=ln.match(/^\s*\[(\d+)\/(\d+)\]\s+已在库中，跳过下载：(.+)/);
+    if(m){ const i=+m[1]-1;
+      dl[i]={i,title:m[3].trim(),journal:(pickedList&&pickedList[i]&&pickedList[i].journal)||'',st:'已在库 ✓',ch:''};
+      cur=null; continue; }
+    if(cur){
+      if(ln.includes('OA 直下成功')){cur.st='下载 ✓';cur.ch='OA';}
+      else if(ln.includes('Edge 借道成功')){cur.st='下载 ✓';cur.ch='Edge';}
+      else if(ln.includes('EBSCO 通道成功')){cur.st='下载 ✓';cur.ch='EBSCO';}
+      else if(ln.includes('出版商页借道成功')){cur.st='下载 ✓';cur.ch='出版商页(IEEE等)';}
+      else if(ln.includes('arXiv 预印本回退成功')){cur.st='下载 ✓';cur.ch='arXiv 预印本';}
+      else if(ln.includes('已入库：')){if(cur.ch===''){cur.st='下载 ✓';cur.ch='ScienceDirect';}}
+      else if(ln.includes('未拿到 PDF')){cur.st='未拿到 ✗';cur.ch='';}
+    }
+    // v1.0.2：把「PDF 保存位置」抓出来，单独显示成一行可复制的提示
+    m=ln.match(/PDF 保存位置：(.+)/);
+    if(m){ dlSavedPath=m[1].trim(); continue; }
+    m=ln.match(/^\s*精读 \[(\d+)\/(\d+)\]\s+(.+)/);
+    if(m){ rd.push({name:m[3].trim(),st:'精读中…',cls:'b'}); cur=null; continue; }
+    if(rd.length){
+      const last=rd[rd.length-1];
+      if(ln.includes('通过 · R1-R12')){last.st='精读 ✓ R1-R12';last.cls='g';}
+      else if(ln.includes('写盘成功但校验有 FAIL')){last.st='精读·校验未过';last.cls='y';}
+      else if(ln.includes('单篇异常')){last.st='精读异常';last.cls='y';}
+      else if(ln.includes('note_writer 退出码')){last.st='精读失败';last.cls='y';}
+    }
+  }
+  const chip=p=>p.st.includes('✓')?'g':(p.st.includes('✗')||p.st.includes('异常')||p.st.includes('失败')||p.st.includes('未过'))?'y':'b';
+  const rows=dl.filter(Boolean).map(p=>`<tr>
+    <td class="t" style="max-width:420px;word-break:break-all">${esc(p.title)}</td>
+    <td class="s" style="white-space:nowrap">${esc(p.journal)}</td>
+    <td style="white-space:nowrap"><span class="st ${chip(p)}">${esc(p.st)}${p.ch?' · '+esc(p.ch):''}</span></td></tr>`).join('');
+  const rrows=rd.map(p=>`<tr>
+    <td class="t" style="max-width:420px;word-break:break-all">${esc(p.name)}</td>
+    <td class="s"></td>
+    <td style="white-space:nowrap"><span class="st ${p.cls}">${esc(p.st)}</span></td></tr>`).join('');
+  // v1.0.2：下载完把「PDF 存到哪」显式写出来——朋友版首跑最常问的就是这个
+  // v1.0.3：再加一个按钮直接打开那个文件夹，省得用户照路径自己找
+  const savedHint=dlSavedPath
+    ? `<div class="tip" style="margin-top:6px">📁 PDF 保存位置：<code style="user-select:all">${esc(dlSavedPath)}</code>
+       <button class="ghost" id="b_openpdf" style="margin-left:8px;white-space:nowrap">打开文件夹</button>
+       　<span class="s">（想换位置：设置 → 文献库位置）</span></div>`
+    : '';
+  box.innerHTML=(rows||rrows)
+    ?`<table style="margin-top:4px"><tr><th>论文</th><th style="width:140px">期刊</th><th style="width:190px">状态</th></tr>${rows}${rrows}</table>${savedHint}`:'';
+  if(dlSavedPath && $('b_openpdf')){
+    $('b_openpdf').onclick=async()=>{
+      const b=$('b_openpdf'); b.disabled=true;
+      try{
+        const r=await (await fetch('/api/open-folder',{method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({which:'pdf'})})).json();
+        if(r.error) alert('打不开：'+r.error);
+      }catch(e){alert('打不开：'+e.message);}
+      finally{b.disabled=false;}
+    };
+  }
+}
+
+// 找文献 → 展示 → 勾选 → 下载并精读（v1.7 核心流）
+function renderResults(arts){
+  d2list=arts||[]; d2topics=''; d2page=0; d2check.clear(); updCkn(); updQsel();
+  paintDiscover();
+  if($('rlbl')) $('rlbl').textContent=`共 ${d2list.length} 篇（顶刊 ${d2list.filter(a=>a.top_journal).length} 篇，其中 UTD/旗舰 ${d2list.filter(a=>a.tier==='UTD').length} 篇）——勾选想读的，或点「🤖 LLM 挑选」`;
+}
+
+// 快捷勾选（v1.9.2）：一键按条件整批勾选，替换语义（不是叠加），勾完跳回第一页
+function updQsel(){
+  if($('qn-all')) $('qn-all').textContent=d2list.length;
+  if($('qn-top')) $('qn-top').textContent=d2list.filter(a=>a.top_journal).length;
+  if($('qn-utd')) $('qn-utd').textContent=d2list.filter(a=>a.tier==='UTD').length;
+}
+function quickSel(mode){
+  if(!d2list.length) return;
+  if(mode==='none'){ d2check.clear(); }
+  else d2list.forEach((a,i)=>{
+    const on = mode==='all' || (mode==='top'&&a.top_journal)
+             || (mode==='utd'&&a.tier==='UTD') || (mode==='head'&&i<20);
+    if(on) d2check.add(i); else d2check.delete(i);
+  });
+  d2page=0; paintDiscover(); updCkn();
+}
+document.querySelectorAll('#qsel button[data-q]').forEach(b=>{
+  b.onclick=()=>quickSel(b.dataset.q);
+});
+
+// 导出参考文献（v1.9.13）：优先导已勾选的；一个都没勾就导当前列表全部。
+// 后端会按 DOI 去 Crossref 补作者/卷期页，前端只管下载 Blob。
+function exportArts(){
+  const idx=[...d2check].sort((a,b)=>a-b);
+  return idx.length ? idx.map(i=>d2list[i]).filter(Boolean) : (d2list||[]).slice(0,200);
+}
+async function exportRefs(fmt,btn){
+  const arts=exportArts();
+  if(!arts.length) return msg($('mtp'),'err','还没有可导出的文献——先检索出列表');
+  const t=btn.textContent; btn.disabled=true; btn.textContent='导出中…';
+  try{
+    const r=await (await fetch('/api/export',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({articles:arts,fmt})})).json();
+    if(!r.ok) throw new Error(r.error||'导出失败');
+    const blob=new Blob([r.text],{type:'text/plain;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=r.filename||('paperpilot-export.'+(fmt==='ris'?'ris':'bib'));
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    msg($('mtp'),'ok',`已导出 ${r.count} 篇（${esc(r.filename)}）`
+      +(r.missing?`　其中 ${r.missing} 篇 Crossref 没给作者，已留空，建议手动补`:''));
+  }catch(e){msg($('mtp'),'err','导出失败：'+esc(e.message));}
+  btn.disabled=false; btn.textContent=t;
+}
+if($('bxb')) $('bxb').onclick=()=>exportRefs('bibtex',$('bxb'));
+if($('bxr')) $('bxr').onclick=()=>exportRefs('ris',$('bxr'));
+
+$('bts').dataset.label='🔍 找文献';
+$('bts').onclick=()=>{
+  const text=$('tptext').value.trim();
+  if(text.length<2) return msg($('mtp'),'err','先写下研究方向（几个字也行，如「库存管理」）');
+  msg($('mtp'),'ok','正在找文献：提炼检索式 → 多路检索 → 去重合并（相关方向的也会带出来）…');
+  jobOnDone=j=>{
+    if(j.status==='done'&&j.result&&j.result.articles){
+      renderResults(j.result.articles);
+      msg($('mtp'),'ok',`找到 <b>${j.result.articles.length}</b> 篇——在下方列表勾选，点「下载并精读」`);
+    }else msg($('mtp'),'err',esc(j.error||'没有找到文献，换个说法或拉长回看窗口试试'));
+  };
+  launch('/api/jobs/topic-search',{text,days:+$('tpdays').value,top_only:$('tponly').checked},'找文献');
+};
+$('tptext').addEventListener('keydown',e=>{if(e.key==='Enter')$('bts').click()});
+
+$('bpick').dataset.label='🤖 LLM 挑选';
+$('bpick').onclick=()=>{
+  if(!d2list.length) return msg($('mtp'),'err','先「找文献」');
+  msg($('mtp'),'ok','LLM 正在逐篇读摘要打分（几十秒到几分钟）…');
+  jobOnDone=async j=>{
+    if(j.status!=='done') return msg($('mtp'),'err',esc(j.error||'打分失败'));
+    try{
+      const r=await (await fetch('/api/reviewed')).json();
+      const th=+$('tps').value;
+      const good=new Map();
+      (r.articles||[]).forEach(a=>{
+        if((a.recommendation_score||0)>=th&&a.score_status==='evidence_reviewed')
+          good.set((a.doi||'').toLowerCase(),a);
+      });
+      d2check.clear();
+      d2list.forEach((a,i)=>{
+        if(a.doi&&good.has(a.doi.toLowerCase())) d2check.add(i);
+      });
+      if(!d2check.size&&good.size){   // DOI 对不上时按题名兜底匹配
+        d2list.forEach((a,i)=>{
+          const t=(a.title||'').toLowerCase().slice(0,40);
+          if(t) for(const v of good.values()){
+            if((v.title||'').toLowerCase().includes(t)){d2check.add(i);break;}
+          }
+        });
+      }
+      paintDiscover(); updCkn();
+      msg($('mtp'),'ok',`LLM 挑出 <b>${d2check.size}</b> 篇值得读（评分 ≥${th} 且证据充分）`);
+    }catch(e){msg($('mtp'),'err','挑选结果读取失败：'+esc(e.message));}
+  };
+  launch('/api/jobs/score',{query:$('tptext').value.trim(),top_n:15,min_score:+$('tps').value},'LLM 打分');
+};
+
+$('bdl2').dataset.label='⬇️ 下载并精读';
+$('bdl2').onclick=()=>{
+  const arts=[...d2check].map(i=>d2list[i]).filter(Boolean);
+  if(!arts.length) return msg($('mtp'),'err','先在列表里勾选要下载的文献');
+  pickedList=arts.map(a=>({title:a.title,journal:a.journal||a.top_journal||'',doi:a.doi||''}));
+  msg($('mtp'),'ok',`开始下载 <b>${arts.length}</b> 篇（下载成功即自动精读，逐篇状态见任务面板）…`);
+  launch('/api/jobs/download',{articles:arts,workers:+$('w3').value},'下载并精读');
+};
+
+$('btp').dataset.label='🚀 全自动';
+$('btp').onclick=()=>{
+  const text=$('tptext').value.trim();
+  if(text.length<2) return msg($('mtp'),'err','先写下研究方向（几个字也行）');
+  msg($('mtp'),'ok','全自动模式：打分 → 自动下载（≥阈值）→ 自动精读 → 报告，全程见任务面板…');
+  jobOnDone=j=>{ if(j.status==='done') loadQueue(); };
+  launch('/api/jobs/topic-full',{text,days:+$('tpdays').value,top_n:+$('tpn').value,
+    min_score:+$('tps').value,top_only:$('tponly').checked,workers:+$('w3').value},'全自动');
+};
+
+// 候选池兜底读取（data/queue.json）
+async function loadQueue(){
+  try{
+    const r=await (await fetch('/api/queue')).json();
+    if(r.articles&&r.articles.length) renderResults(r.articles);
+  }catch(e){}
+}
+$('bq').onclick=loadQueue;
+loadQueue();
+loadJobHistory();
+</script>
+</body>
+</html>

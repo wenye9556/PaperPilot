@@ -1,0 +1,33 @@
+# PaperPilot 本地配置示例
+# 用法：复制本文件并重命名为 config.local.toml（同目录）
+#
+# 这个文件里的东西**不要**打进分发的 exe——打包时只带 .example 版本。
+# 本项目完全自包含：不依赖任何外部 agent / skill 目录，也不去读别的程序留下的密钥。
+# 正常使用不需要这个文件——界面里填的配置会写进同目录的 settings.json 并生效。
+
+# LLM 精读（OpenAI 兼容接口）——对应 paper-reader/config.json 的 [llm] 节
+# 留空 = 用软件界面（设置/首启向导）里保存的那份配置；填了就以这里为准。
+# 正常使用不需要改这个文件——界面配置会自动写入并生效。
+[llm]
+# OpenAI 兼容接口的完整地址，例如 https://你的接口域名/v1/chat/completions
+# （忘写 https:// 也没关系，软件会自动补全）
+base_url = ""
+# 模型名留空即可：界面里填好 Key 和地址后点 🔄 会列出可用的模型供选择
+model = ""
+api_key = ""
+temperature = 0.3
+max_tokens = 12000
+timeout = 600
+
+# 下载与下载前校验
+[download]
+# 出版商正版 PDF 输出目录（与 skill 契约一致；留空 = 用界面里设置的文献库位置）
+output_dir = ""
+# 单条下载超时（秒）
+timeout = 300
+
+# 发现新论文的检索画像来源（默认讀 skill 的 config/radar_profile.json，此处可覆盖）
+[radar]
+window_days = 180
+min_score = 70
+max_push = 10
